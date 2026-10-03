@@ -275,7 +275,7 @@ function setup(stage: Stage): void {
     coneGeo.rotateX(-Math.PI / 2);
     const cone = new THREE.Mesh(
       coneGeo,
-      new THREE.MeshBasicMaterial({ color: '#ffd24a', transparent: true, opacity: 0.28, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }),
+      new THREE.MeshBasicMaterial({ color: '#ffb02e', transparent: true, opacity: 0.45, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2 }),
     );
     cone.renderOrder = 2;
     cone.visible = false;
@@ -373,7 +373,7 @@ async function play(stage: Stage): Promise<number> {
       const dist = Math.hypot(vx, vz);
       const ang = Math.abs(Math.atan2(Math.sin(Math.atan2(vx, vz) - g.npc.char.heading), Math.cos(Math.atan2(vx, vz) - g.npc.char.heading)));
       const sees = dist < 9 && ang < 0.55 && !blocked(p.x, p.z, pp.x, pp.z);
-      (g.cone.material as THREE.MeshBasicMaterial).color.set(sees ? '#ff4a3a' : '#ffd24a');
+      (g.cone.material as THREE.MeshBasicMaterial).color.set(sees ? '#ff3a2a' : '#ffb02e');
       if (sees && !caught && !stage.svc.ui.busy) caught = true;
     }
     const near = Math.hypot(pp.x - GAZEBO.x, pp.z - GAZEBO.z) < 7.5;
