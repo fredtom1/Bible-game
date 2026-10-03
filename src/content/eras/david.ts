@@ -226,6 +226,9 @@ async function play(stage: Stage): Promise<number> {
     cam.cut({ x: -30, y: 4, z: 18 }, { x: -50, y: 2, z: 5 });
     await stage.narrate('All the men of Israel, when they saw the man, fled from him, and were terrified.', '1 Samuel 17:24');
   });
+  void stage.wait(8).then(() => {
+    for (let i = 0; i < israel.count; i++) israel.walkTo(i, -40 - (i % 3) * 1.6, -36 + Math.floor(i / 3) * 3.6, 1.6);
+  }).catch(() => undefined);
   stage.chatter(abinadab, [[stage.line(abinadab, 'I’m Abinadab, Jesse’s second son. Eliab is the eldest, and he thinks that puts him in charge of all of us. Even here.')]]);
   stage.chatter(shammah, [[stage.line(shammah, 'Forty days that giant has shouted at us. Morning and evening. Forty days!', '1 Samuel 17:16')]]);
   let soldierQuiz = false;
@@ -337,8 +340,8 @@ async function play(stage: Stage): Promise<number> {
     david.place(brookX(0) - 1, 0, Math.PI / 2, stage);
     david.char.attachItem('sling');
     stage.player.teleport(-6, 5, Math.PI / 2, stage);
-    goliath.place(26, 0, -Math.PI / 2, stage);
-    bearer.place(24, 1.6, -Math.PI / 2, stage);
+    goliath.place(19, 0, -Math.PI / 2, stage);
+    bearer.place(17, 1.8, -Math.PI / 2, stage);
     for (let i = 0; i < israel.count; i++) israel.place(i, -40 - (i % 3) * 1.6, -36 + Math.floor(i / 3) * 3.6, Math.PI / 2);
     cam.cut({ x: 6, y: 2.6, z: 10 }, { x: 18, y: 3.5, z: 0 });
     await stage.narrate('When the Philistine looked around, and saw David, he disdained him; for he was but a youth, and ruddy, and had a good looking face.', '1 Samuel 17:42');
@@ -350,9 +353,10 @@ async function play(stage: Stage): Promise<number> {
   // ---- Sling mini-game
   stage.player.frozen = true;
   stage.player.char.root.visible = false;
+  david.showTag = false;
   david.char.pose = 'throw';
   cam.beginCinematic();
-  const setAimCam = () => cam.cut({ x: brookX(0) - 4.5, y: 2.3, z: 1.6 }, { x: goliath.position.x, y: 4.6, z: 0 });
+  const setAimCam = () => cam.cut({ x: brookX(0) - 4.5, y: 2.0, z: 1.6 }, { x: goliath.position.x, y: goliath.position.y + 2.2, z: 0 });
   setAimCam();
   stage.svc.ui.story.letterbox(false);
   const ui = h(
@@ -386,7 +390,7 @@ async function play(stage: Stage): Promise<number> {
       ph += (dt * Math.PI * 2) / Math.max(0.6, period);
       m = 0.5 + 0.5 * Math.sin(ph);
       markerEl.style.left = `${m * 100}%`;
-      goliath.position.x = Math.max(16, goliath.position.x - dt * 0.6);
+      goliath.position.x = Math.max(11, goliath.position.x - dt * 0.6);
       if (Math.random() < dt * 4) stage.sfx('sling', 0.4);
       if (input.pressed('action') || input.pressed('jump') || input.pressed('interact')) released = true;
     });
@@ -395,7 +399,7 @@ async function play(stage: Stage): Promise<number> {
     hit = m >= zoneX - 0.015 && m <= zoneX + zoneW + 0.015;
     // fly the stone
     const from = new THREE.Vector3(brookX(0) - 0.6, 2.4, 0.4);
-    const target = new THREE.Vector3(goliath.position.x - 0.2, goliath.position.y + 4.6, 0);
+    const target = new THREE.Vector3(goliath.position.x - 0.25, goliath.position.y + 2.72, 0);
     if (!hit) target.add(new THREE.Vector3(3, rand(Math.random, -1, 2), (Math.random() < 0.5 ? -1 : 1) * rand(Math.random, 1.5, 3)));
     const pb = new Builder();
     pb.add(G.sphere(0.12, 6, 5), '#b8b0a4');
@@ -459,6 +463,7 @@ async function play(stage: Stage): Promise<number> {
   stage.player.teleport(brookX(0) - 3, 4, Math.PI / 2, stage);
   stage.player.frozen = false;
   goliath.showTag = false;
+  david.showTag = true;
 
   stage.objective('Talk to David', david);
   await stage.waitTalk(david);

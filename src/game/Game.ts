@@ -401,6 +401,11 @@ export class Game {
       await stage.talk([
         stage.line(selah, 'Well done! Do you hear that? The first gate has woken up.'),
         stage.line(selah, 'Follow the golden beam to the Gate of the Flood. When you are ready, step through.'),
+        stage.n(
+          this.input.isTouch
+            ? 'Controls: drag your left thumb to walk, drag on the right to look around, and tap Talk to interact. Tap Run to sprint.'
+            : 'Controls: W A S D or the arrow keys to walk, hold Shift to run, drag the mouse to look around, and press E to talk.',
+        ),
         stage.n('Tip: press Esc (or ❚❚) any time to pause. Your progress saves automatically.'),
       ]);
       const g = this.hub!.gates[0];
@@ -466,6 +471,7 @@ export class Game {
     const stage = new Stage(this.services(), { seed: 100 + ERA_ORDER.indexOf(id), look: this.look(), atmosphere: mod.atmosphere });
     this.stage = stage;
     this.currentEra = id;
+    stage.knownFragments = new Set(eraProgress(this.save, id).fragments);
     mod.setup(stage);
     stage.bake();
     this.cam.release(stage.player.position);
@@ -495,7 +501,8 @@ export class Game {
     const prev = eraProgress(this.save, id);
     const firstClear = !prev.completed;
     const stars = Math.max(1, Math.min(3, Math.round((gameStars + Math.max(1, stage.verseStars)) / 2)));
-    this.addXP(firstClear ? 250 : 60, firstClear ? 'Era complete' : 'Era replayed');
+    const bonus = firstClear ? 250 : 60;
+    this.addXP(bonus, firstClear ? 'Era complete' : 'Era replayed');
     const score = stars * 1000 + stage.fragmentsFound.length * 150 + stage.quizCorrect * 100;
     this.updateSave((s) => recordEraResult(s, id, { stars, score, fragments: stage.fragmentsFound, quizCorrect: stage.quizCorrect }));
     stage.player.frozen = true;
@@ -506,7 +513,7 @@ export class Game {
         stars,
         verseStars: stage.verseStars,
         gameStars,
-        xp: stage.xpEarned,
+        xp: stage.xpEarned + bonus,
         fragments: stage.fragmentsFound.length,
         quiz: [stage.quizCorrect, stage.quizTotal],
         translation: stage.translation,
@@ -549,6 +556,7 @@ export class Game {
     this.input.reset();
     this.input.setTouchVisible(false);
     const choice = await this.ui.modal(pauseMenu(this.uiRoot, this.mode === 'era'));
+    this.input.reset(); // the Esc that closed the menu must not reopen it
     this.paused = false;
     this.input.setTouchVisible(true);
     if (choice === 'journal') await this.openJournal();

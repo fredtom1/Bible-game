@@ -152,6 +152,9 @@ function setup(stage: Stage): void {
   shell.add(G.box(0.1, 0.08, 6), '#7a6e5c', { x: TOMB.x - 1, y: gy + 0.04, z: 3.5 });
   const shellG = shell.build();
   stage.scene.add(shellG);
+  const inner = new THREE.PointLight('#ffe2b0', 6, 9, 1.5);
+  inner.position.set(66.8, gy + 2.2, 0.4);
+  stage.scene.add(inner);
   // hill and roof that hide the chamber from above (toggled when inside)
   const cap = new Builder(rng);
   cap.add(G.box(5.8, 0.6, 6.4), R, { x: (CH.x0 + CH.x1) / 2, y: gy + CH.h + 0.3, z: 0 });
@@ -310,6 +313,7 @@ async function play(stage: Stage): Promise<number> {
   const gameStars = beatPeter ? 3 : playerT - peterT < 5 ? 2 : 1;
   stage.addXP(beatPeter ? 100 : 50, beatPeter ? 'Faster than Peter!' : 'Reached the tomb');
   if (beatPeter && john.position.x < TOMB.x - 6) stage.toast('Whoa, you even beat John! (John 20:4 says he outran Peter.)', 'good');
+  if (peter.position.x < TOMB.x - 6) stage.toast('You made it! Peter is still running…', 'info');
   await stage.waitUntil(() => peter.position.x > TOMB.x - 6);
   stage.objective(null);
 

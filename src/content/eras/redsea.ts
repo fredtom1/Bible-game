@@ -10,6 +10,8 @@ import { lerpColor } from '../../world/Terrain';
 import { ParticleField } from '../../world/Particles';
 import { makeWaterMaterial } from '../../world/Water';
 import { Crowd } from '../../world/Crowd';
+import { makeLabel } from '../../world/Character';
+import { ATMOS } from '../../world/Sky';
 import { ERA_BY_ID } from '../catalog';
 import type { NPC } from '../../world/actors';
 import type { Animal } from '../../world/Animal';
@@ -90,7 +92,7 @@ function setup(stage: Stage): void {
     centerX: 70,
     height: ground,
     color: (x, z, y, slope) => {
-      if (y < -1) return lerpColor('#6a5c45', '#857356', noise.get(x * 0.2, z * 0.2) * 0.5 + 0.5);
+      if (y < -1) return lerpColor('#8a7a5c', '#a08a68', noise.get(x * 0.2, z * 0.2) * 0.5 + 0.5);
       if (y < 0.4 && x > SHORE - 4) return '#8f7d5c';
       if (slope > 0.45) return lerpColor('#8a6248', '#a8805a', noise.get(x * 0.05, z * 0.05) * 0.5 + 0.5);
       return lerpColor('#c9a777', '#dcc095', noise.get(x * 0.03, z * 0.03) * 0.5 + 0.5);
@@ -380,7 +382,8 @@ async function play(stage: Stage): Promise<number> {
   moses.setPose('idle');
   stage.ambient('wind', 0.5, 3);
 
-  // ---- The crossing (runner)
+  // ---- The crossing (runner): moonlight so the sea bed is readable
+  void stage.setAtmosphere({ ...ATMOS.night, hemiSky: '#7a94d0', hemiGround: '#3a3a4a', hemiIntensity: 1.25, sunIntensity: 0.9 }, 2);
   stage.bounds = { x0: -20, x1: FAR + 40, z0: -60, z1: 60 };
   stage.addBox((SHORE + FAR) / 2, HALF + 16, FAR - SHORE + 10, 32);
   stage.addBox((SHORE + FAR) / 2, -HALF - 16, FAR - SHORE + 10, 32);
@@ -401,6 +404,10 @@ async function play(stage: Stage): Promise<number> {
     const s = stage.addNPC(i % 3 === 2 ? 'A tired child' : 'An elderly traveller', i % 3 === 2 ? { ...LOOKS.liora, robe: '#a8805a', hair: 'short' } : { ...LOOKS.elder }, x, rand(stage.rng, -5, 5), Math.PI / 2);
     s.showTag = false;
     s.data = { helped: false };
+    const sign = makeLabel('✋ Help!', { size: 0.42, color: '#ffe39a', bg: 'rgba(122,92,255,0.8)' });
+    sign.position.y = 2.25;
+    s.char.root.add(sign);
+    s.data.sign = sign;
     void s.walkTo(stage.runner, FAR + 15, rand(stage.rng, -15, 15), 0.7).catch(() => undefined);
     stragglers.push(s);
   });
@@ -427,8 +434,9 @@ async function play(stage: Stage): Promise<number> {
     stage.player.speedMul = slow;
     for (const s of stragglers) {
       if (s.data.helped) continue;
-      if (s.position.distanceTo(p) < 2.6) {
+      if (s.position.distanceTo(p) < 3.2) {
         s.data.helped = true;
+        (s.data.sign as THREE.Sprite).visible = false;
         helped++;
         s.stop();
         void s.walkTo(stage.runner, FAR + 15, rand(Math.random, -15, 15), 3.4).catch(() => undefined);

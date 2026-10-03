@@ -56,8 +56,10 @@ export class Player {
     this.char.root.rotation.y = heading;
   }
 
-  update(dt: number, input: Input, cam: CameraRig, phys: Physics): void {
+  /** `blocked` = a menu/dialogue is open this frame (no movement, no jumping). */
+  update(dt: number, input: Input, cam: CameraRig, phys: Physics, blocked = false): void {
     const p = this.position;
+    const frozen = this.frozen || blocked;
     if (this.scripted) {
       this.char.update(dt);
       if (this.char.speed > 1) {
@@ -72,7 +74,7 @@ export class Player {
     let mx = 0;
     let mz = 0;
     let running = false;
-    if (!this.frozen) {
+    if (!frozen) {
       const { fx, fz, rx, rz } = cam.basis();
       mx = fx * input.move.y + rx * input.move.x;
       mz = fz * input.move.y + rz * input.move.x;
@@ -89,7 +91,7 @@ export class Player {
     const k = damp(this.grounded ? 12 : 3, dt);
     this.vel.x += (tvx - this.vel.x) * k;
     this.vel.z += (tvz - this.vel.z) * k;
-    if (!this.frozen && this.grounded && input.pressed('jump')) {
+    if (!frozen && this.grounded && input.pressed('jump')) {
       this.vel.y = 6.2;
       this.grounded = false;
     }

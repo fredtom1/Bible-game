@@ -42,6 +42,7 @@ function setup(stage: Stage): void {
     return h;
   };
   stage.heightFn = ground;
+  JESUS.y = ground(JESUS.x, JESUS.z);
   stage.terrain({
     size: 320,
     segments: 130,

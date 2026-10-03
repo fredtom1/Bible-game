@@ -168,6 +168,8 @@ export class Stage implements Physics {
   private tmpV = new THREE.Vector3();
   private projV = new THREE.Vector3();
   fragmentsFound: string[] = [];
+  /** Fragments found on earlier visits (no repeat XP). */
+  knownFragments = new Set<string>();
   quizCorrect = 0;
   quizTotal = 0;
   verseStars = 0;
@@ -711,10 +713,14 @@ export class Stage implements Physics {
     this.runner.update(dt);
     if (this.disposed) return;
     const busy = ui.busy;
-    if (busy) this.player.frozen = true;
-    this.player.update(dt, input, cam, this);
+    this.player.update(dt, input, cam, this, busy);
     const pp = this.player.position;
-    for (const n of this.npcs) n.update(dt, this, pp);
+    const camPos = cam.camera.position;
+    for (const n of this.npcs) {
+      n.update(dt, this, pp);
+      // name tags are unreadably large right next to the camera
+      if (n.tag.visible && n.position.distanceTo(camPos) < 4.5) n.tag.visible = false;
+    }
     for (const a of this.animals) a.update(dt, (x, z) => this.heightAt(x, z));
     for (const b of this.birds) b.update(dt);
 
@@ -737,7 +743,7 @@ export class Stage implements Physics {
       }
     }
     ui.hud.setPrompt(best ? best.label : null, input.isTouch ? '👆' : 'E');
-    input.setInteractLabel(best ? best.label.split(' ')[0] : null);
+    input.setInteractLabel(best ? best.label.split(' ')[0].replace(/[^\p{L}]/gu, '') : null);
     if (best && this.interactCooldown <= 0 && input.pressed('interact')) {
       if (best.once) best.dead = true;
       audio.play('click');
@@ -757,7 +763,7 @@ export class Stage implements Physics {
         const isNew = !this.fragmentsFound.includes(f.frag.id);
         if (isNew) this.fragmentsFound.push(f.frag.id);
         ui.hud.fact(f.frag.title, f.frag.text, f.frag.ref);
-        this.addXP(40, 'Scroll fragment');
+        if (!this.knownFragments.has(f.frag.id)) this.addXP(40, 'Scroll fragment');
         ui.hud.toast(`Scroll fragment ${this.fragmentObjs.filter((x) => x.taken).length}/${this.fragmentObjs.length}`, 'good');
       }
     }
@@ -802,7 +808,7 @@ export class Stage implements Physics {
     const cam = this.svc.cam.camera;
     const W = window.innerWidth;
     const H = window.innerHeight;
-    this.projV.set(tp.x, tp.y + 2.8, tp.z).project(cam);
+    this.projV.set(tp.x, Math.max(tp.y, this.heightAt(tp.x, tp.z)) + 2.8, tp.z).project(cam);
     const behind = this.projV.z > 1;
     let x = (this.projV.x * 0.5 + 0.5) * W;
     let y = (-this.projV.y * 0.5 + 0.5) * H;

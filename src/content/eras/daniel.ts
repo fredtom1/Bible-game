@@ -88,10 +88,7 @@ function setup(stage: Stage): void {
   lions = [];
   const noise = new Noise2D(61);
   const rng = stage.rng;
-  const ground = (x: number, z: number) => {
-    if (Math.hypot(x - DEN.x, z - DEN.z) < 6) return -4;
-    return noise.fbm(x * 0.01, z * 0.01, 2) * 0.25;
-  };
+  const ground = (x: number, z: number) => (Math.hypot(x - DEN.x, z - DEN.z) < 6 ? -4 : 0);
   stage.heightFn = ground;
   stage.terrain({
     size: 320,
@@ -276,7 +273,11 @@ function setup(stage: Stage): void {
     const half = 0.55;
     const coneGeo = new THREE.CircleGeometry(9, 20, Math.PI / 2 - half, half * 2);
     coneGeo.rotateX(-Math.PI / 2);
-    const cone = new THREE.Mesh(coneGeo, new THREE.MeshBasicMaterial({ color: '#ffd24a', transparent: true, opacity: 0.22, depthWrite: false }));
+    const cone = new THREE.Mesh(
+      coneGeo,
+      new THREE.MeshBasicMaterial({ color: '#ffd24a', transparent: true, opacity: 0.28, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }),
+    );
+    cone.renderOrder = 2;
     cone.visible = false;
     stage.scene.add(cone);
     guards.push({ npc: g, cone, path, idx: 1, wait: 0 });
@@ -486,7 +487,7 @@ async function play(stage: Stage): Promise<number> {
   });
 
   // ---- Dawn run with the king
-  void stage.setAtmosphere('dawn', 4);
+  void stage.setAtmosphere('dawn', 1.5);
   stage.ambient('night', 0, 3);
   darius.place(0, -46, Math.PI, stage);
   stage.player.teleport(2, -42, Math.PI, stage);
