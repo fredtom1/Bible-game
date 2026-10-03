@@ -95,6 +95,10 @@ Handy URL options while developing:
 
 The repo includes `vercel.json`, so Vercel needs no extra configuration.
 
+> The game currently lives on the branch `claude/wizardly-gates-sx8znc`, which is the repository's only
+> (and therefore default) branch. Optionally rename it to `main` on GitHub (*Settings → Branches*) before
+> importing; Vercel deploys the default branch to production either way.
+
 **Option A: dashboard (easiest)**
 
 1. Push this repository to GitHub (it already is: `fredtom1/Bible-game`).

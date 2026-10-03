@@ -79,9 +79,8 @@ function setup(stage: Stage): void {
 
   // The crowd: groups that will sit in ranks
   const centers: [number, number][] = [];
-  for (const z of [-4, 10, 24, 38]) for (const x of [-40, -22, 22, 40]) centers.push([x + rand(rng, -2, 2), z + rand(rng, -2, 2)]);
-  centers.push([-6, 30], [8, 44]);
-  const per = Math.max(14, Math.round(26 * Math.max(0.6, stage.svc.quality.particles)));
+  for (const z of [0, 17, 34]) for (const x of [-40, -20, 20, 40]) centers.push([x + rand(rng, -2, 2), z + rand(rng, -2, 2)]);
+  const per = Math.max(16, Math.round(32 * Math.max(0.6, stage.svc.quality.particles)));
   crowd = new Crowd(centers.length * per, rng);
   centers.forEach(([cx, cz], gi) => {
     const from = gi * per;
@@ -209,7 +208,7 @@ async function play(stage: Stage): Promise<number> {
   let carrying = 0;
   let fed = 0;
   let t = 0;
-  const CAP = 3;
+  const CAP = 4;
   const total = groups.length;
   stage.objective('Take bread from Jesus’ basket', jesus, `Fed 0/${total}`);
   const giveBread = () => {

@@ -54,8 +54,29 @@ export class StoryUI {
     this.bars.classList.toggle('on', on);
   }
 
-  /** Show lines one by one. Resolves with the chosen index for each choice line. */
+  private queue: Promise<unknown> = Promise.resolve();
+
+  /**
+   * Show lines one by one. Resolves with the chosen index for each choice
+   * line. Dialogues are queued so two conversations never share the box.
+   */
   dialogue(lines: Line[]): Promise<number[]> {
+    const gen = this.generation;
+    const run = this.queue.then(() => (gen === this.generation ? this.runDialogue(lines) : []));
+    this.queue = run.catch(() => undefined);
+    return run;
+  }
+
+  private generation = 0;
+  private closeCurrent: (() => void) | null = null;
+
+  /** Close the open dialogue and drop queued ones (used when leaving a scene). */
+  cancelAll(): void {
+    this.generation++;
+    this.closeCurrent?.();
+  }
+
+  private runDialogue(lines: Line[]): Promise<number[]> {
     this.busy = true;
     const picks: number[] = [];
     this.dlg.classList.remove('hidden');
@@ -138,6 +159,7 @@ export class StoryUI {
       };
       const onClick = () => advance();
       const cleanup = () => {
+        this.closeCurrent = null;
         clearInterval(typing);
         window.removeEventListener('keydown', onKey, true);
         this.dlg.removeEventListener('click', onClick);
@@ -148,6 +170,10 @@ export class StoryUI {
       };
       window.addEventListener('keydown', onKey, true);
       this.dlg.addEventListener('click', onClick);
+      this.closeCurrent = () => {
+        cleanup();
+        resolve(picks);
+      };
       next();
     });
   }

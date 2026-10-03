@@ -1815,3 +1815,25 @@ html.reduce-motion *::after {
     animation: none;
   }
 }
+
+/* phones held upright: keep the prompt clear of the touch buttons, simplify the top bar */
+@media (pointer: coarse) and (max-width: 600px) {
+  .prompt {
+    bottom: calc(196px + env(safe-area-inset-bottom));
+  }
+  .beat-ui,
+  .sling-ui {
+    bottom: calc(200px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 520px) {
+  .era-chip {
+    display: none;
+  }
+  .hud-tl {
+    max-width: calc(100vw - 150px);
+  }
+  .objective {
+    font-size: 0.86em;
+  }
+}

@@ -719,7 +719,7 @@ export class Stage implements Physics {
     for (const n of this.npcs) {
       n.update(dt, this, pp);
       // name tags are unreadably large right next to the camera
-      if (n.tag.visible && n.position.distanceTo(camPos) < 4.5) n.tag.visible = false;
+      if (n.tag.visible && n.position.distanceTo(camPos) < 6) n.tag.visible = false;
     }
     for (const a of this.animals) a.update(dt, (x, z) => this.heightAt(x, z));
     for (const b of this.birds) b.update(dt);
@@ -853,6 +853,7 @@ export class Stage implements Physics {
     hud.clearMeters();
     hud.setBanner(null);
     this.svc.ui.story.letterbox(false);
+    this.svc.ui.story.cancelAll();
     disposeTree(this.scene);
     this.scene.clear();
   }
